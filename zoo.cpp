@@ -13,6 +13,11 @@
 #include <set>
 #include <unordered_set>
 #include <cstring>
+#include <limits>
+#include <numbers>
+#include <iomanip>
+
+
 
 
 using namespace std;
@@ -41,20 +46,23 @@ double calculatedist(long index1, long index2){
     if(coords[index2]->x > 0 || coords[index2]->y > 0){
         safe2 = true;
     }
-    if((safe1 && !safe2) || (!safe1 && safe2)){
-        cout << "ruh roh\n";
+    if(coords[index1]->x == 0 || coords[index1]->y == 0 || coords[index2]->x == 0 || coords[index2]->y == 0){
+        safe1 = true;
+        safe2 = true;
     }
-    long xsq = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
-    long ysq = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
-    long param = xsq + ysq;
-    return sqrt(param);
+    if((safe1 && !safe2) || (!safe1 && safe2)){
+        return numeric_limits<double>::infinity();
+    }
+    long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
+    long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
+    long fin = x2 + y2;
+    return sqrt(fin); //do the sqrt later when it is returned
 }
 
 void mst(){
-    coords[0]->distance = 0; // Starting from the first vertex
-
+    coords[0]->distance = 0;
+    double running_total = 0;
     for (size_t i = 0; i < coords.size(); ++i) {
-        // Find the vertex with the minimum distance that hasn't been visited
         long minDistIndex = -1;
         double minDist = numeric_limits<double>::infinity();
         for (size_t j = 0; j < coords.size(); ++j) {
@@ -63,34 +71,40 @@ void mst(){
                 minDistIndex = j;
             }
         }
-
-        // Mark this vertex as visited
-        coords[minDistIndex]->visited = true;
-
-        // Update the distances of adjacent vertices
-        for (size_t j = 0; j < coords.size(); ++j) {
-            if (!coords[j]->visited) {
-                double dist = calculatedist(minDistIndex, j);
-                if (dist < coords[j]->distance) {
-                    coords[j]->distance = dist;
-                    coords[j]->prevcoord = minDistIndex;
+        if(minDistIndex != -1){
+            coords[minDistIndex]->visited = true; //we have a -1 visited
+            running_total += coords[minDistIndex]->distance;
+            for (size_t j = 0; j < coords.size(); ++j) {
+                if (!coords[j]->visited) {
+                    double dist = calculatedist(minDistIndex, j);
+                    if (dist < coords[j]->distance && dist != -1) {
+                        coords[j]->distance = dist;
+                        coords[j]->prevcoord = minDistIndex;
+                    }
                 }
             }
         }
     }
-    double running_total;
+    cout << running_total << "\n";
     for (int i=0; i<(int)coords.size(); i++) {
         if (coords[i]->prevcoord != -1) { // If the vertex is connected to the MST
-            cout << coords[i]->index << " connected to " << coords[i]->prevcoord << " with distance " << coords[i]->distance << endl;
-            running_total += coords[i]->distance;
+            if(coords[i]->index < coords[i]->prevcoord) cout << coords[i]->index << " " << coords[i]->prevcoord << endl;
+            else cout << coords[i]->prevcoord << " " << coords[i]->index << endl;
         }
     }
-    cout << running_total << "\n";
 }
 
+void fasttsp(){
+
+}
+
+void opttsp(){
+
+}
 
 int main(int argc, char * argv[]) {
-    
+    cout << std::setprecision(2);
+    cout << std::fixed;
 	struct option longOpts[] = {
 		{"help",no_argument,NULL,'h'},
 		{"mode",required_argument,NULL,'m'},
@@ -124,16 +138,17 @@ int main(int argc, char * argv[]) {
 				exit(1);
 		}
 	}
-    cout << optimal;
-    cout << fast;
-    cout << MST << "\n";
 	fill();
     
     if(MST){
         mst();
     }
+    else if(fast){
+        fasttsp();
+    }
+    else if(optimal){
+        opttsp();
+    }
 
-
-    
 	return 0;
 }
