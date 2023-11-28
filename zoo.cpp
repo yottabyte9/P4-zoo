@@ -4,21 +4,11 @@
 #include <string>
 #include <cmath>
 #include "zoo.h"
-#include <math.h>
 #include <algorithm>
 #include <getopt.h>
-#include <fstream>
-#include <sstream>
-#include <map>
-#include <set>
-#include <unordered_set>
 #include <cstring>
-#include <limits>
-#include <numbers>
 #include <iomanip>
-
-
-
+#include <random>
 
 using namespace std;
 
@@ -94,8 +84,34 @@ void mst(){
     }
 }
 
-void fasttsp(){
+void fasttsp() {
+    vector<int> tour = {0, 1};
+    double total_distance = 2 * calculatedist(0, 1);
 
+    for (int city = 2; city < (int)coords.size(); ++city) {
+        double min_increase = numeric_limits<double>::max();
+        int position = -1;
+
+        for (int i = 0; i < (int)tour.size(); ++i) {
+            double increase = calculatedist(tour[i], city) + calculatedist(city, tour[(i + 1) % tour.size()]) - calculatedist(tour[i], tour[(i + 1) % tour.size()]);
+            if (increase < min_increase) {
+                min_increase = increase;
+                position = i;
+            }
+        }
+
+        if (position != -1) {
+            tour.insert(tour.begin() + position + 1, city);
+            total_distance += min_increase;
+        }
+    }
+
+    cout << total_distance << "\n";
+
+    for(int i=0; i< (int)tour.size(); i++){
+        cout << tour[i] << " ";
+    }
+    cout << "\n";
 }
 
 void opttsp(){
