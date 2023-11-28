@@ -22,31 +22,29 @@ void fill(){
         long tempy;
         cin >> tempx;
         cin >> tempy;
-        Coordinate* temp = new Coordinate(i, tempx, tempy);
+        char type;
+        if(tempx < 0 && tempy < 0){
+            type = 'd';
+        }
+        else if((tempx <= 0 && tempy == 0) || (tempx == 0 && tempy <= 0)){
+            type = 'w';
+        }
+        else{
+            type = 's';
+        }
+        Coordinate* temp = new Coordinate(i, tempx, tempy, type);
         coords.push_back(temp);
     }
 }
 
 double calculatedist(long index1, long index2){
-    bool safe1 = false;
-    bool safe2 = false;
-    if(coords[index1]->x > 0 || coords[index1]->y > 0){
-        safe1 = true;
+    if((coords[index1]->type == 's' && coords[index2]->type == 's') || (coords[index1]->type == 'w' || coords[index2]->type == 'w') || (coords[index1]->type == 'd' && coords[index2]->type == 'd')){
+        long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
+        long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
+        long fin = x2 + y2;
+        return sqrt(fin);
     }
-    if(coords[index2]->x > 0 || coords[index2]->y > 0){
-        safe2 = true;
-    }
-    if(coords[index1]->x == 0 || coords[index1]->y == 0 || coords[index2]->x == 0 || coords[index2]->y == 0){
-        safe1 = true;
-        safe2 = true;
-    }
-    if((safe1 && !safe2) || (!safe1 && safe2)){
-        return numeric_limits<double>::infinity();
-    }
-    long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
-    long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
-    long fin = x2 + y2;
-    return sqrt(fin); //do the sqrt later when it is returned
+    return numeric_limits<double>::infinity();
 }
 
 void mst(){
@@ -62,7 +60,7 @@ void mst(){
             }
         }
         if(minDistIndex != -1){
-            coords[minDistIndex]->visited = true; //we have a -1 visited
+            coords[minDistIndex]->visited = true;
             running_total += coords[minDistIndex]->distance;
             for (size_t j = 0; j < coords.size(); ++j) {
                 if (!coords[j]->visited) {
