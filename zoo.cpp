@@ -12,16 +12,19 @@
 
 using namespace std;
 
-vector<Coordinate*> coords;
+vector<Coordinate> coords;
 int num_vertices;
 
 void fill(){
     cin >> num_vertices;
+    coords.resize(num_vertices);
     for(int i=0; i<num_vertices; i++){
-        long tempx;
-        long tempy;
+        int tempx;
+        int tempy;
         cin >> tempx;
         cin >> tempy;
+        coords[i].x = tempx;
+        coords[i].y = tempy;
         char type;
         if(tempx < 0 && tempy < 0){
             type = 'd';
@@ -32,49 +35,53 @@ void fill(){
         else{
             type = 's';
         }
-        Coordinate* temp = new Coordinate(i, tempx, tempy, type);
-        coords.push_back(temp);
+        coords[i].type = type;
     }
 }
 
-double calculatedist(long index1, long index2){
-    if((coords[index1]->type == 's' && coords[index2]->type == 's') || (coords[index1]->type == 'w' || coords[index2]->type == 'w') || (coords[index1]->type == 'd' && coords[index2]->type == 'd')){
-        long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
-        long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
-        long fin = x2 + y2;
+double calculatedist(int index1, int index2){
+    if((coords[index1].type == 's' && coords[index2].type == 's') || (coords[index1].type == 'w' || coords[index2].type == 'w') || (coords[index1].type == 'd' && coords[index2].type == 'd')){
+        int x2 = (coords[index1].x-coords[index2].x) * (coords[index1].x-coords[index2].x);
+        int y2 = (coords[index1].y-coords[index2].y) * (coords[index1].y-coords[index2].y);
+        int fin = x2 + y2;
         return sqrt(fin);
     }
     return numeric_limits<double>::infinity();
 }
 
-double calculatedistfast(long index1, long index2){
-    long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
-    long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
-    long fin = x2 + y2;
+double calculatedistfast(int index1, int index2){
+    int temp1 = coords[index1].x;
+    int temp2 = coords[index1].y;
+    int temp3 = coords[index2].x;
+    int temp4 = coords[index2].y;
+    int x2 = (temp1-temp3) * (temp1-temp3);
+    int y2 = (temp2-temp4) * (temp2-temp4);
+    int fin = x2 + y2;
     return sqrt(fin);
+    
 }
 
 void mst(){
-    coords[0]->distance = 0;
+    coords[0].distance = 0;
     double running_total = 0;
-    for (size_t i = 0; i < coords.size(); ++i) {
-        long minDistIndex = -1;
+    for (int i = 0; i < (int)coords.size(); ++i) {
+        int minDistIndex = -1;
         double minDist = numeric_limits<double>::infinity();
-        for (size_t j = 0; j < coords.size(); ++j) {
-            if (!coords[j]->visited && coords[j]->distance < minDist) {
-                minDist = coords[j]->distance;
+        for (int j = 0; j < (int)coords.size(); ++j) {
+            if (!coords[j].visited && coords[j].distance < minDist) {
+                minDist = coords[j].distance;
                 minDistIndex = j;
             }
         }
         if(minDistIndex != -1){
-            coords[minDistIndex]->visited = true;
-            running_total += coords[minDistIndex]->distance;
-            for (size_t j = 0; j < coords.size(); ++j) {
-                if (!coords[j]->visited) {
+            coords[minDistIndex].visited = true;
+            running_total += coords[minDistIndex].distance;
+            for (int j = 0; j < (int)coords.size(); ++j) {
+                if (!coords[j].visited) {
                     double dist = calculatedist(minDistIndex, j);
-                    if (dist < coords[j]->distance && dist != -1) {
-                        coords[j]->distance = dist;
-                        coords[j]->prevcoord = minDistIndex;
+                    if (dist < coords[j].distance && dist != -1) {
+                        coords[j].distance = dist;
+                        coords[j].prevcoord = minDistIndex;
                     }
                 }
             }
@@ -82,23 +89,28 @@ void mst(){
     }
     cout << running_total << "\n";
     for (int i=0; i<(int)coords.size(); i++) {
-        if (coords[i]->prevcoord != -1) { // If the vertex is connected to the MST
-            if(coords[i]->index < coords[i]->prevcoord) cout << coords[i]->index << " " << coords[i]->prevcoord << endl;
-            else cout << coords[i]->prevcoord << " " << coords[i]->index << endl;
+        if (coords[i].prevcoord != -1) { // If the vertex is connected to the MST
+            if(i < coords[i].prevcoord) cout << i << " " << coords[i].prevcoord << endl;
+            else cout << coords[i].prevcoord << " " << i << endl;
         }
     }
 }
 
 void fasttsp() {
     vector<int> tour = {0, 1};
+    tour.reserve(coords.size());
     double total_distance = 2 * calculatedistfast(0, 1);
-
-    for (int city = 2; city < (int)coords.size(); ++city) {
+    int temp2 = (int)coords.size();
+    for (int city = 2; city < temp2; ++city) {
         double min_increase = numeric_limits<double>::max();
         int position = -1;
-
-        for (int i = 0; i < (int)tour.size(); ++i) {
-            double increase = calculatedistfast(tour[i], city) + calculatedistfast(city, tour[(i + 1) % tour.size()]) - calculatedistfast(tour[i], tour[(i + 1) % tour.size()]);
+        int temp = (int)tour.size();
+        for (int i = 0; i < temp; ++i) {
+            int other = (i + 1);
+            if (other == temp) {
+                other = 0;
+            }
+            double increase = calculatedistfast(tour[i], city) + calculatedistfast(city, tour[other]) - calculatedistfast(tour[i], tour[other]);
             if (increase < min_increase) {
                 min_increase = increase;
                 position = i;
@@ -143,17 +155,16 @@ int main(int argc, char * argv[]) {
 				cout << "help flag\n";
 				return 0;
 			case 'm':
-                if (strcmp(optarg, "MST") == 0) {
+                if (optarg[0] == 'M') {
                     MST = true;
                 }
-                if(strcmp(optarg, "FASTTSP") == 0) {
+                else if((optarg[0]=='F')) {
                     fast = true;
                 }
-                if(strcmp(optarg, "OPTTSP") == 0) {
+                else{
                     optimal = true;
                 }
 				break;
-			case '?':
 			default:
                 cout << "default error\n";
 				exit(1);
