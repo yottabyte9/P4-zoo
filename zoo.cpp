@@ -47,6 +47,13 @@ double calculatedist(long index1, long index2){
     return numeric_limits<double>::infinity();
 }
 
+double calculatedistfast(long index1, long index2){
+    long x2 = (coords[index1]->x-coords[index2]->x) * (coords[index1]->x-coords[index2]->x);
+    long y2 = (coords[index1]->y-coords[index2]->y) * (coords[index1]->y-coords[index2]->y);
+    long fin = x2 + y2;
+    return sqrt(fin);
+}
+
 void mst(){
     coords[0]->distance = 0;
     double running_total = 0;
@@ -84,14 +91,14 @@ void mst(){
 
 void fasttsp() {
     vector<int> tour = {0, 1};
-    double total_distance = 2 * calculatedist(0, 1);
+    double total_distance = 2 * calculatedistfast(0, 1);
 
     for (int city = 2; city < (int)coords.size(); ++city) {
         double min_increase = numeric_limits<double>::max();
         int position = -1;
 
         for (int i = 0; i < (int)tour.size(); ++i) {
-            double increase = calculatedist(tour[i], city) + calculatedist(city, tour[(i + 1) % tour.size()]) - calculatedist(tour[i], tour[(i + 1) % tour.size()]);
+            double increase = calculatedistfast(tour[i], city) + calculatedistfast(city, tour[(i + 1) % tour.size()]) - calculatedistfast(tour[i], tour[(i + 1) % tour.size()]);
             if (increase < min_increase) {
                 min_increase = increase;
                 position = i;
