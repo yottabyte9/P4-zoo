@@ -18,21 +18,12 @@ struct Compare {
 };
 
 struct Coordinate {
-	bool visited;
-	double distance;
+	bool visited = false;
+	double distance = numeric_limits<double>::infinity();
 	
-    long x;
-    long y;
-    long index;
-    long prevcoord;
+    int x;
+    int y;
+    int prevcoord = -1;
     char type;
     
-    Coordinate(long index_in, long x_in, long y_in, char type_in)
-        : x(x_in), y(y_in), index(index_in), type(type_in){
-        visited = false;
-        distance = numeric_limits<double>::infinity();
-        prevcoord = -1;
-    };
-    
-    ~Coordinate(){};
 };
