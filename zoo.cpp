@@ -21,7 +21,6 @@ bool optimal = false;
 
 double fast_dist;
 vector<int> fasttsp_tour;
-vector<int> opt_tour;
 
 
 void fill(){
@@ -229,7 +228,7 @@ bool promising(vector<int> path, int permLength){
     for (int i = 0; i < permLength-1; ++i) {
         currCost += calculatedistfast(path[i], path[i + 1]);
     }
-    std::vector<int> rest_of_vertices(path.begin() + permLength, path.end());
+    vector<int> rest_of_vertices(path.begin() + permLength, path.end());
     double mstCost = optmst(rest_of_vertices);
     double currDist = currCost;
     double arm1Len = numeric_limits<double>::infinity();
@@ -248,16 +247,16 @@ bool promising(vector<int> path, int permLength){
     }
     currDist += mstCost + arm1Len + arm2Len;
     bool promise = currDist < fast_dist;
-    for (size_t i = 0; i < path.size(); ++i){
+    /* for (size_t i = 0; i < path.size(); ++i){
         cout << setw(2) << path[i] << ' ';
     }
-    //cout << setw(4) << permLength << setw(10) << currCost;
-    //cout << setw(10) << arm1Len << setw(10) << arm2Len;
+    cout << setw(4) << permLength << setw(10) << currCost;
+    cout << setw(10) << arm1Len << setw(10) << arm2Len; */
     if(promise){
         //cout << setw(10) << mstCost << setw(10) << currDist << "  " << "true" << '\n';
         if(mstCost==0){
             //cout << "New best cost achieved: " << currDist << "\n";
-            opt_tour = path;
+            fasttsp_tour = path;
             fast_dist = currDist;
         }
     }
@@ -283,27 +282,11 @@ void genPerms(vector<int> path, int permLength) { //permlength = how many indice
         }
         return;
     }  // if ..complete path
-
-    /* cout << "looking at path with permlength " << permLength << ": ";
-    for(int i=0; i< (int)path.size(); i++){
-        cout << path[i] << " ";
-    } */
     
 
     if (!promising(path, permLength)) {
         return;
     }  // if ..not promising
-
-    /* if(permLength == num_vertices-1){
-        double tempcost = 0;
-        for(int i=0; i< (int)path.size(); i++){
-            tempcost += calculatedistfast(path[i], path[i+1]);
-        }
-        cout << "path cost: " << tempcost << "\n";
-        if( tempcost < fast_dist){
-            fast_dist = tempcost;
-        }
-    } */
 
     for (size_t i = permLength; i < path.size(); ++i) {
         swap(path[permLength], path[i]);
@@ -316,16 +299,28 @@ void genPerms(vector<int> path, int permLength) { //permlength = how many indice
 
 void opttsp(){
     std::vector<int> indices(num_vertices);  // Create a vector of the required size
-    for(int i = 0; i < num_vertices; ++i) {
+    /* for(int i = 0; i < num_vertices; ++i) {
         indices[i] = i;  // Fill the vector with increasing indices
-    }
+    } */
+
     fasttsp();
-    genPerms(indices, 1);
+    
+    reverse(fasttsp_tour.begin()+1, fasttsp_tour.end());
+    
+    genPerms(fasttsp_tour, 1);
     cout << fast_dist << "\n";
     
-    for(int i=0; i< (int)opt_tour.size(); i++){
-        cout << opt_tour[i] << " ";
+    if((int)fasttsp_tour.size() != 0){
+        for(int i=0; i< (int)fasttsp_tour.size(); i++){
+            cout << fasttsp_tour[i] << " ";
+        }
     }
+    else{
+        for(int i=0; i< (int)fasttsp_tour.size(); i++){
+            cout << fasttsp_tour[i] << " ";
+        }
+    }
+
 }
 
 int main(int argc, char * argv[]) {
